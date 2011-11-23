@@ -1,0 +1,19 @@
+project Memor is
+
+   type Gtkada_Kind_Type is
+      ("static", "relocatable");
+   for Source_Dirs use ("../src");
+
+   package Builder is
+
+            for Default_Switches ("ada") use ("-s", "-g", "-k");
+   end Builder;
+
+   package Compiler is
+
+            for Default_Switches ("ada") use ("-gnatwea", "-gnato", "-fstack-check", "-g", "-gnata", "-gnatyaAbBcCdefhiklnM78oOprsStux");
+
+   end Compiler;
+
+end Memor;
+

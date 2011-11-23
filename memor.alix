@@ -1,0 +1,9 @@
+project_name = Memor
+source_dir = src
+builder_option = "-g"
+builder_option = "-k"
+compiler_option = "-g"
+compiler_option = "-gnatwa"
+compiler_option = "-gnatyabcefhiklmnoprst"
+compiler_option = "-gnat05"
+linker_option = "-g"
