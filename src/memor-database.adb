@@ -205,6 +205,26 @@ package body Memor.Database is
       return List.Last_Index;
    end Count;
 
+   --------------------
+   -- Count_Matching --
+   --------------------
+
+   function Count_Matching
+     (Match : not null access
+        function (Item : Element_Type'Class)
+      return Boolean)
+      return Natural
+   is
+      Result : Natural := 0;
+   begin
+      for I in 1 .. Last_Index loop
+         if Match (Reference (I).all) then
+            Result := Result + 1;
+         end if;
+      end loop;
+      return Result;
+   end Count_Matching;
+
    ------------
    -- Create --
    ------------
@@ -299,6 +319,16 @@ package body Memor.Database is
          return It.Item.all;
       end if;
    end Element;
+
+   ------------
+   -- Exists --
+   ------------
+
+   function Exists (Identifier : String) return Boolean is
+      Result : constant Cursor := Search (Identifier);
+   begin
+      return Has_Element (Result);
+   end Exists;
 
    --------------------
    -- Generic_Update --

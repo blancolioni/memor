@@ -67,9 +67,17 @@ package Memor.Database is
                    return Cursor;
 
    function Search (Identifier : String) return Cursor;
-   function Get (Identifier : String) return Element_Reference;
+   function Exists (Identifier : String) return Boolean;
+   function Get (Identifier : String) return Element_Reference
+   with Pre => Exists (Identifier);
 
    function Last_Index return Database_Reference'Base;
+
+   function Count_Matching
+     (Match : not null access
+        function (Item : Element_Type'Class)
+      return Boolean)
+      return Natural;
 
    procedure Lock;
    procedure Unlock;
