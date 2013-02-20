@@ -562,6 +562,20 @@ package body Memor.Database is
       end loop;
    end Scan;
 
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Process : not null access
+        procedure (Item : Element_Reference))
+   is
+   begin
+      for I in 1 .. Db.Last_Index loop
+         Process (Reference (I));
+      end loop;
+   end Scan;
+
    ------------
    -- Search --
    ------------
