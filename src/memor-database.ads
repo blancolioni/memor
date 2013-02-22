@@ -53,6 +53,13 @@ package Memor.Database is
                      procedure (Item : Element_Type'Class));
 
    procedure Scan
+     (Match   : not null access
+        function (Item : Element_Type'Class)
+      return Boolean;
+      Process : not null access
+        procedure (Item : Element_Type'Class));
+
+   procedure Scan
      (Process : not null access
         procedure (Item : Element_Reference));
 
