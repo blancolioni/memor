@@ -82,12 +82,11 @@ package Memor.Database is
    function Get (Identifier : String) return Element_Reference
    with Pre => Exists (Identifier);
 
-   function Last_Index return Database_Reference'Base;
+   function Last_Index return Database_Reference;
 
    function Count_Matching
      (Match : not null access
-        function (Item : Element_Type'Class)
-      return Boolean)
+        function (Item : Element_Type'Class) return Boolean)
       return Natural;
 
    procedure Lock;

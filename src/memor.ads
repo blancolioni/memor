@@ -2,7 +2,8 @@ package Memor is
 
    pragma Preelaborate;
 
-   type Database_Reference is new Positive;
+   type Database_Reference is private;
+   Null_Database_Reference : constant Database_Reference;
 
    type Root_Record_Type is abstract tagged private;
 
@@ -37,6 +38,12 @@ package Memor is
      is abstract;
 
 private
+
+   type Database_Reference is new Natural;
+   Null_Database_Reference : constant Database_Reference := 0;
+
+   subtype Real_Database_Reference is
+     Database_Reference range 1 .. Database_Reference'Last;
 
    type Root_Record_Type is abstract tagged
       record

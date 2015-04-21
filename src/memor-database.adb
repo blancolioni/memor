@@ -38,7 +38,7 @@ package body Memor.Database is
    type Db_Entry_Access is access Db_Entry;
 
    package Db_Vectors is
-      new Ada.Containers.Vectors (Database_Reference, Db_Entry_Access);
+      new Ada.Containers.Vectors (Real_Database_Reference, Db_Entry_Access);
 
    protected Db is
       entry Lock;
@@ -457,7 +457,7 @@ package body Memor.Database is
    -- Last_Index --
    ----------------
 
-   function Last_Index return Database_Reference'Base is
+   function Last_Index return Database_Reference is
    begin
       return Db.Last_Index;
    end Last_Index;
