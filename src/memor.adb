@@ -25,7 +25,7 @@ package body Memor is
    ---------------
 
    function Reference
-     (Item : Root_Record_Type)
+     (Item : Root_Record_Type'Class)
       return Database_Reference
    is
    begin

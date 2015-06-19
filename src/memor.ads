@@ -7,7 +7,7 @@ package Memor is
 
    type Root_Record_Type is abstract tagged private;
 
-   function Reference (Item : Root_Record_Type)
+   function Reference (Item : Root_Record_Type'Class)
                        return Database_Reference;
 
    procedure Locking (Enabled : Boolean);

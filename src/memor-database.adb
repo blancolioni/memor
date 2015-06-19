@@ -525,6 +525,16 @@ package body Memor.Database is
    -- Reference --
    ---------------
 
+   function Reference (Item : Element_Type'Class) return Element_Reference is
+      Ref : Database_Reference := Memor.Reference (Item);
+   begin
+      return Reference (Ref);
+   end Reference;
+
+   ---------------
+   -- Reference --
+   ---------------
+
    function Reference (Item : Cursor) return Element_Reference is
       It : constant Db_Entry_Access := Db.Element (Item.Reference);
    begin

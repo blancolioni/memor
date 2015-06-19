@@ -32,6 +32,8 @@ package Memor.Database is
 
    function Element (Ref : Database_Reference) return Element_Type'Class;
    function Reference (Ref : Database_Reference) return Element_Reference;
+   function Reference (Item : Element_Type'Class) return Element_Reference;
+
    --     function Locked_Element
    --  (Ref : Database_Reference)
    --  return Element_Access;
