@@ -309,12 +309,9 @@ package body Memor.Database is
    begin
       if Locking then
          It.Begin_Fetch;
-         declare
-            Result : constant Element_Type'Class := It.Item.all;
-         begin
+         return Result : constant Element_Type'Class := It.Item.all do
             It.End_Fetch;
-            return Result;
-         end;
+         end return;
       else
          return It.Item.all;
       end if;
@@ -526,7 +523,7 @@ package body Memor.Database is
    ---------------
 
    function Reference (Item : Element_Type'Class) return Element_Reference is
-      Ref : Database_Reference := Memor.Reference (Item);
+      Ref : constant Database_Reference := Memor.Reference (Item);
    begin
       return Reference (Ref);
    end Reference;
