@@ -52,10 +52,16 @@ package body Memor.Element_Vectors is
       Update    : not null access
         procedure (Element : in out Element_Type))
    is
-      Value : Element_Type := Container.Element (Reference);
    begin
-      Update (Value);
-      Container.Replace_Element (Reference, Value);
+      while Container.Last_Index < Reference loop
+         Container.Append (Default_Value);
+      end loop;
+      declare
+         Value : Element_Type renames
+                   Element_Vectors.Vector (Container) (Reference);
+      begin
+         Update (Value);
+      end;
    end Update_Element;
 
 end Memor.Element_Vectors;
