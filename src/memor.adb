@@ -43,4 +43,17 @@ package body Memor is
 --        Item.Reference := Value;
 --     end Set_Reference;
 
+   ---------------
+   -- To_String --
+   ---------------
+
+   function To_String
+     (Reference : Database_Reference)
+      return String
+   is
+      Result : constant String := Database_Reference'Image (Reference);
+   begin
+      return Result (2 .. Result'Last);
+   end To_String;
+
 end Memor;

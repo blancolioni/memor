@@ -5,7 +5,11 @@ package Memor is
    type Database_Reference is private;
    Null_Database_Reference : constant Database_Reference;
 
-   type Root_Record_Type is abstract tagged private;
+   function To_String
+     (Reference : Database_Reference)
+      return String;
+
+   type Root_Record_Type is abstract tagged limited private;
 
    function Reference (Item : Root_Record_Type'Class)
                        return Database_Reference;
@@ -32,7 +36,7 @@ package Memor is
                              return Root_Database_Type'Class
                              is abstract;
 
-   type Identifier_Record_Type is interface;
+   type Identifier_Record_Type is limited interface;
 
    function Identifier (Item : Identifier_Record_Type) return String
      is abstract;
@@ -45,7 +49,7 @@ private
    subtype Real_Database_Reference is
      Database_Reference range 1 .. Database_Reference'Last;
 
-   type Root_Record_Type is abstract tagged
+   type Root_Record_Type is abstract tagged limited
       record
          Reference : Database_Reference;
       end record;

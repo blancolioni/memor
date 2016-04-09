@@ -205,6 +205,15 @@ package body Memor.Database is
       return List.Last_Index;
    end Count;
 
+   -----------
+   -- Count --
+   -----------
+
+   function Count return Natural is
+   begin
+      return Natural (Last_Index);
+   end Count;
+
    --------------------
    -- Count_Matching --
    --------------------
@@ -304,16 +313,21 @@ package body Memor.Database is
    -- Element --
    -------------
 
-   function Element (Ref : Database_Reference) return Element_Type'Class is
+   function Element
+     (Ref : Database_Reference)
+      return access constant Element_Type'Class
+   is
       It : constant Db_Entry_Access := Db.Element (Ref);
    begin
       if Locking then
          It.Begin_Fetch;
-         return Result : constant Element_Type'Class := It.Item.all do
+         return Result : constant access constant Element_Type'Class :=
+           It.Item
+         do
             It.End_Fetch;
          end return;
       else
-         return It.Item.all;
+         return It.Item;
       end if;
    end Element;
 
@@ -522,7 +536,10 @@ package body Memor.Database is
    -- Reference --
    ---------------
 
-   function Reference (Item : Element_Type'Class) return Element_Reference is
+   function Reference
+     (Item : Element_Type'Class)
+      return Element_Reference
+   is
       Ref : constant Database_Reference := Memor.Reference (Item);
    begin
       return Reference (Ref);
@@ -561,10 +578,10 @@ package body Memor.Database is
    begin
       for I in 1 .. Db.Last_Index loop
          declare
-            E : constant Element_Type'Class :=
+            E : constant access constant Element_Type'Class :=
                   Element (I);
          begin
-            Process (E);
+            Process (E.all);
          end;
       end loop;
    end Scan;
@@ -597,11 +614,11 @@ package body Memor.Database is
    begin
       for I in 1 .. Db.Last_Index loop
          declare
-            E : constant Element_Type'Class :=
+            E : constant access constant Element_Type'Class :=
                   Element (I);
          begin
-            if Match (E) then
-               Process (E);
+            if Match (E.all) then
+               Process (E.all);
             end if;
          end;
       end loop;
@@ -621,10 +638,10 @@ package body Memor.Database is
       for I in 1 .. Db.Last_Index loop
          if Db.Has_Element (I) then
             declare
-               E : constant Element_Type'Class :=
+               E : constant access constant Element_Type'Class :=
                      Element (I);
             begin
-               if Match (E) then
+               if Match (E.all) then
                   return (True, I);
                end if;
             end;
@@ -642,11 +659,11 @@ package body Memor.Database is
       for I in 1 .. Db.Last_Index loop
          if Db.Has_Element (I) then
             declare
-               E : constant Element_Type'Class :=
+               E : constant access constant Element_Type'Class :=
                      Element (I);
             begin
-               if E in Identifier_Record_Type'Class
-                 and then Identifier_Record_Type'Class (E).Identifier
+               if E.all in Identifier_Record_Type'Class
+                 and then Identifier_Record_Type'Class (E.all).Identifier
                  = Identifier
                then
                   return (True, I);

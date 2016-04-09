@@ -30,9 +30,17 @@ package Memor.Database is
 
    procedure Delete (Item : not null access Element_Type'Class);
 
-   function Element (Ref : Database_Reference) return Element_Type'Class;
-   function Reference (Ref : Database_Reference) return Element_Reference;
-   function Reference (Item : Element_Type'Class) return Element_Reference;
+   function Element
+     (Ref : Database_Reference)
+      return access constant Element_Type'Class;
+
+   function Reference
+     (Ref : Database_Reference)
+      return Element_Reference;
+
+   function Reference
+     (Item : Element_Type'Class)
+      return Element_Reference;
 
    --     function Locked_Element
    --  (Ref : Database_Reference)
@@ -85,6 +93,8 @@ package Memor.Database is
    with Pre => Exists (Identifier);
 
    function Last_Index return Database_Reference;
+
+   function Count return Natural;
 
    function Count_Matching
      (Match : not null access
