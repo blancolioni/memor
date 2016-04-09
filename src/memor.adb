@@ -29,7 +29,7 @@ package body Memor is
       return Database_Reference
    is
    begin
-      return Item.Reference;
+      return Item.Ref;
    end Reference;
 
    -------------------

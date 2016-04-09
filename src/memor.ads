@@ -51,7 +51,7 @@ private
 
    type Root_Record_Type is abstract tagged limited
       record
-         Reference : Database_Reference;
+         Ref : Database_Reference;
       end record;
 
    function Locking return Boolean;
