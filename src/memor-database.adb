@@ -1,4 +1,6 @@
 --  with Ada.Numerics.Discrete_Random;
+with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Unchecked_Deallocation;
 
 package body Memor.Database is
 
@@ -40,20 +42,26 @@ package body Memor.Database is
    package Db_Vectors is
       new Ada.Containers.Vectors (Real_Database_Reference, Db_Entry_Access);
 
+   package Db_Free_List is
+     new Ada.Containers.Doubly_Linked_Lists (Real_Database_Reference);
+
    protected Db is
       entry Lock;
       procedure Unlock;
 
       procedure Insert (Item : not null access Element_Type'Class);
-      procedure Delete (Item : not null access Element_Type'Class);
+      procedure Delete (Reference : Database_Reference);
       procedure Set (Index : Database_Reference;
                      Item  : Element_Access);
 
       function Element (Ref : Database_Reference) return Db_Entry_Access;
       function Has_Element (Ref : Database_Reference) return Boolean;
       function Last_Index return Database_Reference'Base;
+      function Deleted_Count return Natural;
+
    private
       V              : Db_Vectors.Vector;
+      Free           : Db_Free_List.List;
       Db_Lock        : Boolean := False;
       Rec_Lock_Count : Natural := 0;
    end Db;
@@ -68,10 +76,24 @@ package body Memor.Database is
       -- Delete --
       ------------
 
-      procedure Delete (Item : not null access Element_Type'Class) is
+      procedure Delete (Reference : Database_Reference) is
+         Current : Db_Entry_Access := V (Reference);
+         procedure Free_Entry is
+           new Ada.Unchecked_Deallocation (Db_Entry, Db_Entry_Access);
       begin
-         V.Delete (Root_Record_Type (Item.all).Reference);
+         Free.Append (Reference);
+         V.Replace_Element (Reference, null);
+         Free_Entry (Current);
       end Delete;
+
+      -------------------
+      -- Deleted_Count --
+      -------------------
+
+      function Deleted_Count return Natural is
+      begin
+         return Natural (Free.Length);
+      end Deleted_Count;
 
       -------------
       -- Element --
@@ -96,8 +118,16 @@ package body Memor.Database is
       ------------
 
       procedure Insert (Item : not null access Element_Type'Class) is
+         New_Item : constant Db_Entry_Access := new Db_Entry (Item);
       begin
-         V.Append (new Db_Entry (Item));
+         if Free.Is_Empty then
+            V.Append (New_Item);
+            Memor.Root_Record_Type (Item.all).Ref := V.Last_Index;
+         else
+            Memor.Root_Record_Type (Item.all).Ref := Free.First_Element;
+            V (Memor.Root_Record_Type (Item.all).Ref) := New_Item;
+            Free.Delete_First;
+         end if;
       end Insert;
 
       ----------------
@@ -185,6 +215,26 @@ package body Memor.Database is
 
    end Db_Entry;
 
+   ------------------
+   -- Active_Count --
+   ------------------
+
+   function Active_Count return Natural is
+      Result : Natural := 0;
+   begin
+      for I in 1 .. Db.Last_Index loop
+         declare
+            E : constant access constant Element_Type'Class :=
+                  Element (I);
+         begin
+            if E /= null then
+               Result := Result + 1;
+            end if;
+         end;
+      end loop;
+      return Result;
+   end Active_Count;
+
    ---------
    -- Add --
    ---------
@@ -203,15 +253,6 @@ package body Memor.Database is
    function Count (List : Element_List) return Natural is
    begin
       return List.Last_Index;
-   end Count;
-
-   -----------
-   -- Count --
-   -----------
-
-   function Count return Natural is
-   begin
-      return Natural (Last_Index);
    end Count;
 
    --------------------
@@ -245,7 +286,6 @@ package body Memor.Database is
       Item : constant Element_Access := new Element_Type;
    begin
       Db.Insert (Item);
-      Memor.Root_Record_Type (Item.all).Reference := Db.Last_Index;
       Creator (Item.all);
       return Item.Reference;
    end Create;
@@ -274,10 +314,14 @@ package body Memor.Database is
    is
       Item : constant Element_Access := new Element_Type;
    begin
-      Memor.Root_Record_Type (Item.all).Reference := Ref;
+      Memor.Root_Record_Type (Item.all).Ref := Ref;
       Db.Set (Ref, Item);
       Creator (Item.all);
    end Create;
+
+   ------------
+   -- Create --
+   ------------
 
    function Create (Creator : not null access procedure
                       (Item : in out Element_Type'Class))
@@ -304,10 +348,21 @@ package body Memor.Database is
    -- Delete --
    ------------
 
-   procedure Delete (Item : not null access Element_Type'Class) is
+   procedure Delete
+     (Reference : Database_Reference)
+   is
    begin
-      Db.Delete (Item);
+      Db.Delete (Reference);
    end Delete;
+
+   -------------------
+   -- Deleted_Count --
+   -------------------
+
+   function Deleted_Count return Natural is
+   begin
+      return Db.Deleted_Count;
+   end Deleted_Count;
 
    -------------
    -- Element --
@@ -319,15 +374,19 @@ package body Memor.Database is
    is
       It : constant Db_Entry_Access := Db.Element (Ref);
    begin
-      if Locking then
-         It.Begin_Fetch;
-         return Result : constant access constant Element_Type'Class :=
-           It.Item
-         do
-            It.End_Fetch;
-         end return;
+      if It = null then
+         return null;
       else
-         return It.Item;
+         if Locking then
+            It.Begin_Fetch;
+            return Result : constant access constant Element_Type'Class :=
+              It.Item
+            do
+               It.End_Fetch;
+            end return;
+         else
+            return It.Item;
+         end if;
       end if;
    end Element;
 
@@ -421,15 +480,17 @@ package body Memor.Database is
          declare
             E      : constant Db_Entry_Access := Db.Element (I);
          begin
-            if Locking then
-               E.Lock;
+            if E /= null then
+               if Locking then
+                  E.Lock;
+               end if;
+               declare
+                  Item : constant Element_Access := Element_Access (E.Item);
+               begin
+                  Process (Item.all);
+                  E.Unlock;
+               end;
             end if;
-            declare
-               Item : constant Element_Access := Element_Access (E.Item);
-            begin
-               Process (Item.all);
-               E.Unlock;
-            end;
          end;
       end loop;
    end Iterate;
@@ -449,17 +510,19 @@ package body Memor.Database is
          declare
             E      : constant Db_Entry_Access := Db.Element (I);
          begin
-            if Locking then
-               E.Lock;
-            end if;
-            declare
-               Item : constant Element_Access := Element_Access (E.Item);
-            begin
-               if Match (Item.all) then
-                  Process (Item.all);
+            if E /= null then
+               if Locking then
+                  E.Lock;
                end if;
-               E.Unlock;
-            end;
+               declare
+                  Item : constant Element_Access := Element_Access (E.Item);
+               begin
+                  if Match (Item.all) then
+                     Process (Item.all);
+                  end if;
+                  E.Unlock;
+               end;
+            end if;
          end;
       end loop;
    end Iterate;
@@ -529,7 +592,11 @@ package body Memor.Database is
    function Reference (Ref : Database_Reference) return Element_Reference is
       It : constant Db_Entry_Access := Db.Element (Ref);
    begin
-      return Element_Reference (It.Item);
+      if It = null then
+         return null;
+      else
+         return Element_Reference (It.Item);
+      end if;
    end Reference;
 
    ---------------
@@ -581,7 +648,9 @@ package body Memor.Database is
             E : constant access constant Element_Type'Class :=
                   Element (I);
          begin
-            Process (E.all);
+            if E /= null then
+               Process (E.all);
+            end if;
          end;
       end loop;
    end Scan;
@@ -596,7 +665,13 @@ package body Memor.Database is
    is
    begin
       for I in 1 .. Db.Last_Index loop
-         Process (Reference (I));
+         declare
+            Ref : constant Element_Reference := Reference (I);
+         begin
+            if Ref /= null then
+               Process (Ref);
+            end if;
+         end;
       end loop;
    end Scan;
 
@@ -765,5 +840,14 @@ package body Memor.Database is
    begin
       Update (Ref, Perform_Update'Access);
    end Update;
+
+   -----------------
+   -- Upper_Bound --
+   -----------------
+
+   function Upper_Bound return Natural is
+   begin
+      return Natural (Last_Index);
+   end Upper_Bound;
 
 end Memor.Database;

@@ -28,7 +28,8 @@ package Memor.Database is
                      Creator : not null access procedure
                        (Item : in out Element_Type'Class));
 
-   procedure Delete (Item : not null access Element_Type'Class);
+   procedure Delete
+     (Reference : Database_Reference);
 
    function Element
      (Ref : Database_Reference)
@@ -94,7 +95,9 @@ package Memor.Database is
 
    function Last_Index return Database_Reference;
 
-   function Count return Natural;
+   function Active_Count return Natural;
+   function Deleted_Count return Natural;
+   function Upper_Bound return Natural;
 
    function Count_Matching
      (Match : not null access
