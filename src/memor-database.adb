@@ -699,6 +699,30 @@ package body Memor.Database is
       end loop;
    end Scan;
 
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Match   : not null access
+        function (Item : Element_Reference)
+      return Boolean;
+      Process : not null access
+        procedure (Item : Element_Reference))
+   is
+   begin
+      for I in 1 .. Db.Last_Index loop
+         declare
+            E : constant access constant Element_Type'Class :=
+                  Element (I);
+         begin
+            if Match (Element_Reference (E)) then
+               Process (Element_Reference (E));
+            end if;
+         end;
+      end loop;
+   end Scan;
+
    ------------
    -- Search --
    ------------

@@ -74,6 +74,13 @@ package Memor.Database is
      (Process : not null access
         procedure (Item : Element_Reference));
 
+   procedure Scan
+     (Match   : not null access
+        function (Item : Element_Reference)
+      return Boolean;
+      Process : not null access
+        procedure (Item : Element_Reference));
+
    procedure Iterate (Process : not null access
                         procedure (Item : in out Element_Type'Class));
 
