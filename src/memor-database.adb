@@ -419,7 +419,9 @@ package body Memor.Database is
          Item : constant Element_Access := Element_Access (E.Item);
       begin
          Updater (Item.all, Data);
-         E.Unlock;
+         if Locking then
+            E.Unlock;
+         end if;
       end;
    end Generic_Update;
 
@@ -488,7 +490,9 @@ package body Memor.Database is
                   Item : constant Element_Access := Element_Access (E.Item);
                begin
                   Process (Item.all);
-                  E.Unlock;
+                  if Locking then
+                     E.Unlock;
+                  end if;
                end;
             end if;
          end;
@@ -520,7 +524,9 @@ package body Memor.Database is
                   if Match (Item.all) then
                      Process (Item.all);
                   end if;
-                  E.Unlock;
+                  if Locking then
+                     E.Unlock;
+                  end if;
                end;
             end if;
          end;
@@ -813,10 +819,6 @@ package body Memor.Database is
    -- Update --
    ------------
 
-   ------------
-   -- Update --
-   ------------
-
    procedure Update (Ref : Database_Reference;
                      Updater : not null access
                        procedure (Item : in out Element_Type'Class))
@@ -830,7 +832,9 @@ package body Memor.Database is
          Item : constant Element_Access := Element_Access (E.Item);
       begin
          Updater (Item.all);
-         E.Unlock;
+         if Locking then
+            E.Unlock;
+         end if;
       end;
    end Update;
 
