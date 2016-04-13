@@ -19,7 +19,7 @@ package body Memor.Element_Vectors is
       return Element_Type
    is
    begin
-      if Reference < Container.Last_Index then
+      if Reference <= Container.Last_Index then
          return Element_Vectors.Vector (Container).Element (Reference);
       else
          return Default_Value;
