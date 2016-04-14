@@ -422,6 +422,7 @@ package body Memor.Database is
          if Locking then
             E.Unlock;
          end if;
+         Item.After_Change;
       end;
    end Generic_Update;
 
@@ -493,6 +494,7 @@ package body Memor.Database is
                   if Locking then
                      E.Unlock;
                   end if;
+                  Item.After_Change;
                end;
             end if;
          end;
@@ -527,6 +529,7 @@ package body Memor.Database is
                   if Locking then
                      E.Unlock;
                   end if;
+                  Item.After_Change;
                end;
             end if;
          end;
@@ -835,6 +838,7 @@ package body Memor.Database is
          if Locking then
             E.Unlock;
          end if;
+         E.Item.After_Change;
       end;
    end Update;
 
@@ -863,6 +867,7 @@ package body Memor.Database is
       is
       begin
          Updater (Item);
+         Item.After_Change;
       end Perform_Update;
 
    begin

@@ -14,6 +14,10 @@ package Memor is
    function Reference (Item : Root_Record_Type'Class)
                        return Database_Reference;
 
+   procedure After_Change
+     (Item : Root_Record_Type)
+   is null;
+
    procedure Locking (Enabled : Boolean);
 
    type Root_Database_Type is abstract tagged private;
