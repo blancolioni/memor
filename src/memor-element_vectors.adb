@@ -26,6 +26,22 @@ package body Memor.Element_Vectors is
       end if;
    end Element;
 
+   -------------
+   -- Iterate --
+   -------------
+
+   procedure Iterate
+     (Container : Vector;
+      Process   : not null access
+        procedure (Reference : Memor.Database_Reference;
+                   Element   : Element_Type))
+   is
+   begin
+      for Reference in 1 .. Container.Last_Index loop
+         Process (Reference, Container.Element (Reference));
+      end loop;
+   end Iterate;
+
    ---------------------
    -- Replace_Element --
    ---------------------

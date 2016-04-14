@@ -26,6 +26,12 @@ package Memor.Element_Vectors is
       Update    : not null access
         procedure (Element : in out Element_Type));
 
+   procedure Iterate
+     (Container : Vector;
+      Process   : not null access
+        procedure (Reference : Memor.Database_Reference;
+                   Element   : Element_Type));
+
 private
 
    package Element_Vectors is
