@@ -101,6 +101,7 @@ package Memor.Database is
    with Pre => Exists (Identifier);
 
    function Last_Index return Database_Reference;
+   function To_Reference (Index : Positive) return Database_Reference;
 
    function Active_Count return Natural;
    function Deleted_Count return Natural;

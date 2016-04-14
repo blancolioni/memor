@@ -794,6 +794,15 @@ package body Memor.Database is
 --        Memor.Root_Record_Type (Item.all).Reference := Index;
 --     end Set;
 
+   ------------------
+   -- To_Reference --
+   ------------------
+
+   function To_Reference (Index : Positive) return Database_Reference is
+   begin
+      return Database_Reference (Index);
+   end To_Reference;
+
    ------------
    -- Unlock --
    ------------
