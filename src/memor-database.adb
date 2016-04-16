@@ -846,6 +846,30 @@ package body Memor.Database is
    -- Update --
    ------------
 
+   procedure Update (Ref     : Database_Reference;
+                     Updater : not null access
+                       procedure (Item : in out Root_Record_Type'Class))
+   is
+      E      : constant Db_Entry_Access := Db.Element (Ref);
+   begin
+      if Locking then
+         E.Lock;
+      end if;
+      declare
+         Item : constant Element_Access := Element_Access (E.Item);
+      begin
+         Updater (Item.all);
+         if Locking then
+            E.Unlock;
+         end if;
+         E.Item.After_Change;
+      end;
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
    overriding
    procedure Update (Item    : Local_Database_Type;
                      Ref     : Memor.Database_Reference;

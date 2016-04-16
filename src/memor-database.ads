@@ -52,6 +52,10 @@ package Memor.Database is
                      Updater : not null access
                        procedure (Item : in out Element_Type'Class));
 
+   procedure Update (Ref     : Database_Reference;
+                     Updater : not null access
+                       procedure (Item : in out Root_Record_Type'Class));
+
    generic
       type User_Data (<>) is private;
    procedure Generic_Update (Ref   : Database_Reference;
