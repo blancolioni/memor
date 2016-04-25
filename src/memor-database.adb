@@ -505,6 +505,28 @@ package body Memor.Database is
    -- Iterate --
    -------------
 
+   procedure Iterate (Process : not null access
+                        procedure (Item : in out Root_Record_Type'Class))
+   is
+      procedure Update (Item : in out Element_Type'Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Item : in out Element_Type'Class) is
+      begin
+         Process (Item);
+      end Update;
+
+   begin
+      Iterate (Update'Access);
+   end Iterate;
+
+   -------------
+   -- Iterate --
+   -------------
+
    procedure Iterate (Match : not null access
                       function (Item : Element_Type'Class)
                       return Boolean;

@@ -94,6 +94,9 @@ package Memor.Database is
                       Process : not null access
                         procedure (Item : in out Element_Type'Class));
 
+   procedure Iterate (Process : not null access
+                        procedure (Item : in out Root_Record_Type'Class));
+
    function Search (Match : not null access
                       function (Item : Element_Type'Class)
                       return Boolean)
