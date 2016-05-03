@@ -792,11 +792,15 @@ package body Memor.Database is
                E : constant access constant Element_Type'Class :=
                      Element (I);
             begin
-               if E.all in Identifier_Record_Type'Class
-                 and then Identifier_Record_Type'Class (E.all).Identifier
-                 = Identifier
-               then
-                  return (True, I);
+               if E.all in Identifier_Record_Type'Class then
+                  declare
+                     Id : constant String :=
+                            Identifier_Record_Type'Class (E.all).Identifier;
+                  begin
+                     if Id = Identifier then
+                        return (True, I);
+                     end if;
+                  end;
                end if;
             end;
          end if;
