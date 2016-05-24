@@ -88,6 +88,9 @@ package Memor.Database is
    procedure Iterate (Process : not null access
                         procedure (Item : in out Element_Type'Class));
 
+   procedure Iterate (Process : not null access
+                        procedure (Item : not null access Element_Type'Class));
+
    procedure Iterate (Match : not null access
                       function (Item : Element_Type'Class)
                       return Boolean;
@@ -96,6 +99,10 @@ package Memor.Database is
 
    procedure Iterate (Process : not null access
                         procedure (Item : in out Root_Record_Type'Class));
+
+   procedure Iterate (Process : not null access
+                        procedure (Item : not null access
+                                     Root_Record_Type'Class));
 
    function Search (Match : not null access
                       function (Item : Element_Type'Class)

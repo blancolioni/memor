@@ -478,6 +478,29 @@ package body Memor.Database is
      (Process : not null access
                         procedure (Item : in out Element_Type'Class))
    is
+      procedure Update (Item : not null access Element_Type'Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Item : not null access Element_Type'Class) is
+      begin
+         Process (Item.all);
+      end Update;
+
+   begin
+      Iterate (Update'Access);
+   end Iterate;
+
+   -------------
+   -- Iterate --
+   -------------
+
+   procedure Iterate
+     (Process : not null access
+        procedure (Item : not null access Element_Type'Class))
+   is
    begin
       for I in 1 .. Db.Last_Index loop
          declare
@@ -490,7 +513,7 @@ package body Memor.Database is
                declare
                   Item : constant Element_Access := Element_Access (E.Item);
                begin
-                  Process (Item.all);
+                  Process (Item);
                   if Locking then
                      E.Unlock;
                   end if;
@@ -515,6 +538,29 @@ package body Memor.Database is
       ------------
 
       procedure Update (Item : in out Element_Type'Class) is
+      begin
+         Process (Item);
+      end Update;
+
+   begin
+      Iterate (Update'Access);
+   end Iterate;
+
+   -------------
+   -- Iterate --
+   -------------
+
+   procedure Iterate (Process : not null access
+                        procedure (Item : not null access
+                                     Root_Record_Type'Class))
+   is
+      procedure Update (Item : not null access Element_Type'Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Item : not null access Element_Type'Class) is
       begin
          Process (Item);
       end Update;
