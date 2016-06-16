@@ -800,6 +800,29 @@ package body Memor.Database is
       end loop;
    end Scan;
 
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Process : not null access
+        procedure (Item : Root_Record_Type'Class))
+   is
+      procedure Internal (Item : Element_Type'Class);
+
+      --------------
+      -- Internal --
+      --------------
+
+      procedure Internal (Item : Element_Type'Class) is
+      begin
+         Process (Item);
+      end Internal;
+
+   begin
+      Scan (Internal'Access);
+   end Scan;
+
    ------------
    -- Search --
    ------------
