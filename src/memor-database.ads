@@ -141,7 +141,7 @@ package Memor.Database is
    procedure Add (List : in out Element_List;
                   Item : Element_Reference);
 
-   function Get_Database return Root_Database_Type'Class;
+   function Get_Database return Memor_Database;
 
 --     function Random_Element return Element_Access;
 --     function Random_Reference return Element_Reference;

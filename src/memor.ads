@@ -34,10 +34,18 @@ package Memor is
                      Ref  : Memor.Database_Reference;
                      Updater : not null access
                        procedure (Item : in out Root_Record_Type'Class))
-     is abstract;
+   is abstract;
+
+   function Element
+     (Database  : Root_Database_Type;
+      Reference : Database_Reference)
+      return access constant Root_Record_Type'Class
+      is abstract;
+
+   type Memor_Database is access all Root_Database_Type'Class;
 
    function Object_Database (Item : Root_Record_Type)
-                             return Root_Database_Type'Class
+                             return Memor_Database
                              is abstract;
 
    type Identifier_Record_Type is limited interface;

@@ -19,13 +19,18 @@ package body Memor.Database is
    overriding
    function Database_Class_Name (Item : Local_Database_Type) return String;
 
-   overriding
-   procedure Update (Item    : Local_Database_Type;
-                     Ref     : Memor.Database_Reference;
-                     Updater : not null access
-                       procedure (Item : in out Root_Record_Type'Class));
+   overriding procedure Update
+     (Item    : Local_Database_Type;
+      Ref     : Memor.Database_Reference;
+      Updater : not null access
+        procedure (Item : in out Root_Record_Type'Class));
 
-   Db_Object : Local_Database_Type;
+   overriding function Element
+     (Db        : Local_Database_Type;
+      Reference : Database_Reference)
+      return access constant Root_Record_Type'Class;
+
+   Db_Object : aliased Local_Database_Type;
 
    protected type Db_Entry (Item : access Element_Type'Class) is
       entry Begin_Fetch;
@@ -390,6 +395,16 @@ package body Memor.Database is
       end if;
    end Element;
 
+   overriding function Element
+     (Db        : Local_Database_Type;
+      Reference : Database_Reference)
+      return access constant Root_Record_Type'Class
+   is
+      pragma Unreferenced (Db);
+   begin
+      return Element (Reference);
+   end Element;
+
    ------------
    -- Exists --
    ------------
@@ -445,9 +460,9 @@ package body Memor.Database is
    -- Get_Database --
    ------------------
 
-   function Get_Database return Root_Database_Type'Class is
+   function Get_Database return Memor_Database is
    begin
-      return Db_Object;
+      return Db_Object'Access;
    end Get_Database;
 
    -----------------
