@@ -4,23 +4,24 @@ package body Memor.Element_Vectors is
    -- Clear --
    -----------
 
-   overriding procedure Clear (Container : in out Vector) is
+   procedure Clear (Container : in out Vector) is
    begin
-      Element_Vectors.Vector (Container).Clear;
+      Container.V.Clear;
    end Clear;
 
    -------------
    -- Element --
    -------------
 
-   overriding function Element
+   function Element
      (Container : Vector;
-      Reference : Database_Reference)
+      Index     : Index_Type'Class)
       return Element_Type
    is
+      Reference : constant Database_Reference := Index.Reference;
    begin
-      if Reference <= Container.Last_Index then
-         return Element_Vectors.Vector (Container).Element (Reference);
+      if Reference <= Container.V.Last_Index then
+         return Container.V.Element (Reference);
       else
          return Default_Value;
       end if;
@@ -33,51 +34,89 @@ package body Memor.Element_Vectors is
    procedure Iterate
      (Container : Vector;
       Process   : not null access
-        procedure (Reference : Memor.Database_Reference;
+        procedure (Index     : Index_Type'Class;
                    Element   : Element_Type))
    is
    begin
-      for Reference in 1 .. Container.Last_Index loop
-         Process (Reference, Container.Element (Reference));
-      end loop;
+      if Container.Db /= null then
+         for Reference in 1 .. Container.V.Last_Index loop
+            Process (Index_Type'Class (Container.Db.Element (Reference).all),
+                     Container.V.Element (Reference));
+         end loop;
+      end if;
    end Iterate;
 
    ---------------------
    -- Replace_Element --
    ---------------------
 
-   overriding procedure Replace_Element
+   procedure Replace_Element
      (Container : in out Vector;
-      Reference : Database_Reference;
+      Index     : Index_Type'Class;
       Element   : Element_Type)
    is
    begin
-      while Container.Last_Index < Reference loop
-         Container.Append (Default_Value);
+      pragma Assert (Container.Db = null
+                     or else Container.Db = Index.Object_Database);
+
+      while Container.V.Last_Index < Index.Reference loop
+         Container.V.Append (Default_Value);
       end loop;
-      Element_Vectors.Vector (Container).Replace_Element (Reference, Element);
+      Container.V.Replace_Element (Index.Reference, Element);
+      Container.Db := Index.Object_Database;
+   end Replace_Element;
+
+   ---------------------
+   -- Replace_Element --
+   ---------------------
+
+   procedure Replace_Element
+     (Container : in out Vector;
+      Index     : not null access constant Index_Type'Class;
+      Element   : Element_Type)
+   is
+   begin
+      Container.Replace_Element (Index.all, Element);
    end Replace_Element;
 
    --------------------
    -- Update_Element --
    --------------------
 
-   overriding procedure Update_Element
+   procedure Update_Element
      (Container : in out Vector;
-      Reference : Database_Reference;
+      Index     : Index_Type'Class;
       Update    : not null access
         procedure (Element : in out Element_Type))
    is
    begin
-      while Container.Last_Index < Reference loop
-         Container.Append (Default_Value);
+      pragma Assert (Container.Db = null
+                     or else Container.Db = Index.Object_Database);
+      Container.Db := Index.Object_Database;
+
+      while Container.V.Last_Index < Index.Reference loop
+         Container.V.Append (Default_Value);
       end loop;
       declare
          Value : Element_Type renames
-                   Element_Vectors.Vector (Container) (Reference);
+                   Container.V (Index.Reference);
       begin
          Update (Value);
       end;
+   end Update_Element;
+
+   --------------------
+   -- Update_Element --
+   --------------------
+
+   procedure Update_Element
+     (Container : in out Vector;
+      Index     : not null access Index_Type'Class;
+      Update    : not null access
+        procedure (Element : in out Element_Type))
+   is
+   begin
+      Container.Update_Element (Index.all, Update);
    end Update_Element;
 
 end Memor.Element_Vectors;
