@@ -187,7 +187,7 @@ package body Memor.Element_Vectors is
 
    procedure Update_Element
      (Container : in out Vector;
-      Index     : not null access Index_Type'Class;
+      Index     : not null access constant Index_Type'Class;
       Update    : not null access
         procedure (Element : in out Element_Type))
    is
