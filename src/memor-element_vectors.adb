@@ -27,25 +27,6 @@ package body Memor.Element_Vectors is
       end if;
    end Element;
 
-   -------------
-   -- Iterate --
-   -------------
-
-   procedure Iterate
-     (Container : Vector;
-      Process   : not null access
-        procedure (Index     : Index_Type'Class;
-                   Element   : Element_Type))
-   is
-   begin
-      if Container.Db /= null then
-         for Reference in 1 .. Container.V.Last_Index loop
-            Process (Index_Type'Class (Container.Db.Element (Reference).all),
-                     Container.V.Element (Reference));
-         end loop;
-      end if;
-   end Iterate;
-
    ---------------------
    -- Replace_Element --
    ---------------------
@@ -78,6 +59,101 @@ package body Memor.Element_Vectors is
    begin
       Container.Replace_Element (Index.all, Element);
    end Replace_Element;
+
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Container : Vector;
+      Process   : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : Element_Type))
+   is
+   begin
+      Scan (Container, True, Process);
+   end Scan;
+
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Container    : Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : Element_Type))
+   is
+   begin
+      if Container.Db /= null then
+         for Reference in 1 .. Container.V.Last_Index loop
+            if not Skip_Default
+              or else Container.V.Element (Reference) /= Default_Value
+            then
+               Process
+                 (Index_Type'Class (Container.Db.Element (Reference).all),
+                  Container.V.Element (Reference));
+            end if;
+         end loop;
+      end if;
+   end Scan;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update
+     (Container : in out Vector;
+      Process   : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : in out Element_Type))
+   is
+   begin
+      Update (Container, True, Process);
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update
+     (Container    : in out Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : in out Element_Type))
+   is
+   begin
+      if Container.Db /= null then
+         for Reference in 1 .. Container.V.Last_Index loop
+            if not Skip_Default
+              or else Container.V.Element (Reference) /= Default_Value
+            then
+               declare
+                  Index : Index_Type'Class renames
+                            Index_Type'Class
+                              (Container.Db.Element (Reference).all);
+
+                  procedure Do_Update (Element : in out Element_Type);
+
+                  ---------------
+                  -- Do_Update --
+                  ---------------
+
+                  procedure Do_Update (Element : in out Element_Type) is
+                  begin
+                     Process (Index, Element);
+                  end Do_Update;
+
+               begin
+                  Container.Update_Element (Index, Do_Update'Access);
+               end;
+
+            end if;
+         end loop;
+      end if;
+   end Update;
 
    --------------------
    -- Update_Element --

@@ -44,11 +44,31 @@ package Memor.Element_Vectors is
       Update    : not null access
         procedure (Element : in out Element_Type));
 
-   procedure Iterate
-     (Container : Vector;
-      Process   : not null access
+   procedure Scan
+     (Container    : Vector;
+      Process      : not null access
         procedure (Index     : Index_Type'Class;
                    Element   : Element_Type));
+
+   procedure Scan
+     (Container    : Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : Element_Type));
+
+   procedure Update
+     (Container    : in out Vector;
+      Process      : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : in out Element_Type));
+
+   procedure Update
+     (Container    : in out Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : Index_Type'Class;
+                   Element   : in out Element_Type));
 
 private
 
