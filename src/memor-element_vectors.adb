@@ -99,6 +99,46 @@ package body Memor.Element_Vectors is
       end if;
    end Scan;
 
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Container    : Vector;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : Element_Type))
+   is
+   begin
+      Container.Scan (True, Process);
+   end Scan;
+
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Container    : Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : Element_Type))
+   is
+   begin
+      if Container.Db /= null then
+         for Reference in 1 .. Container.V.Last_Index loop
+            if not Skip_Default
+              or else Container.V.Element (Reference) /= Default_Value
+            then
+               Process
+                 (Index_Type'Class
+                    (Container.Db.Element (Reference).all)'Access,
+                  Container.V.Element (Reference));
+            end if;
+         end loop;
+      end if;
+   end Scan;
+
    ------------
    -- Update --
    ------------

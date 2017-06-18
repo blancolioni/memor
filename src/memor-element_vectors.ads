@@ -57,6 +57,19 @@ package Memor.Element_Vectors is
         procedure (Index     : Index_Type'Class;
                    Element   : Element_Type));
 
+   procedure Scan
+     (Container    : Vector;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : Element_Type));
+
+   procedure Scan
+     (Container    : Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : Element_Type));
+
    procedure Update
      (Container    : in out Vector;
       Process      : not null access
