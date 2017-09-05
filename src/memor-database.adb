@@ -251,6 +251,15 @@ package body Memor.Database is
       List.Append (Item.Reference);
    end Add;
 
+   ------------
+   -- Adjust --
+   ------------
+
+   overriding procedure Adjust (Ref : in out Updateable_Reference) is
+   begin
+      Ref.Count.all := Ref.Count.all + 1;
+   end Adjust;
+
    -----------
    -- Count --
    -----------
@@ -395,6 +404,10 @@ package body Memor.Database is
       end if;
    end Element;
 
+   -------------
+   -- Element --
+   -------------
+
    overriding function Element
      (Db        : Local_Database_Type;
       Reference : Database_Reference)
@@ -414,6 +427,29 @@ package body Memor.Database is
    begin
       return Has_Element (Result);
    end Exists;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   overriding procedure Finalize (Ref : in out Updateable_Reference) is
+   begin
+      if Ref.Count /= null then
+         Ref.Count.all := Ref.Count.all - 1;
+         if Ref.Count.all = 0 then
+            declare
+               procedure Free is
+                 new Ada.Unchecked_Deallocation (Natural, Count_Access);
+            begin
+               Free (Ref.Count);
+               Ref.Count := null;
+               if Locking then
+                  Db.Element (Ref.Element.Ref).Unlock;
+               end if;
+            end;
+         end if;
+      end if;
+   end Finalize;
 
    --------------------
    -- Generic_Update --
@@ -473,6 +509,15 @@ package body Memor.Database is
    begin
       return Item.Has_Element;
    end Has_Element;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   overriding procedure Initialize (Ref : in out Updateable_Reference) is
+   begin
+      Ref.Count := new Natural'(1);
+   end Initialize;
 
    ------------
    -- Insert --
@@ -1006,6 +1051,25 @@ package body Memor.Database is
 
    begin
       Update (Ref, Perform_Update'Access);
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   function Update
+     (Item : not null access constant Element_Type'Class)
+      return Updateable_Reference
+   is
+      Element : constant Db_Entry_Access := Db.Element (Item.Ref);
+   begin
+      if Locking then
+         Element.Lock;
+      end if;
+
+      return Result : Updateable_Reference (Element.Item) do
+         null;
+      end return;
    end Update;
 
    -----------------

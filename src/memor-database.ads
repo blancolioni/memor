@@ -1,4 +1,5 @@
 private with Ada.Containers.Vectors;
+private with Ada.Finalization;
 
 generic
    Class_Name : String;
@@ -42,6 +43,15 @@ package Memor.Database is
    function Reference
      (Item : Element_Type'Class)
       return Element_Reference;
+
+   type Updateable_Reference
+     (Element : not null access Element_Type'Class)
+   is tagged private
+     with Implicit_Dereference => Element;
+
+   function Update
+     (Item : not null access constant Element_Type'Class)
+      return Updateable_Reference;
 
    --     function Locked_Element
    --  (Ref : Database_Reference)
@@ -161,5 +171,18 @@ private
       end record;
 
    Null_Cursor : constant Cursor := (False, 1);
+
+   type Count_Access is access Natural;
+
+   type Updateable_Reference
+     (Element : not null access Element_Type'Class)
+   is new Ada.Finalization.Controlled with
+      record
+         Count : Count_Access;
+      end record;
+
+   overriding procedure Adjust (Ref : in out Updateable_Reference);
+   overriding procedure Finalize (Ref : in out Updateable_Reference);
+   overriding procedure Initialize (Ref : in out Updateable_Reference);
 
 end Memor.Database;
