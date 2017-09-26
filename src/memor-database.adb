@@ -23,7 +23,7 @@ package body Memor.Database is
      (Item    : Local_Database_Type;
       Ref     : Memor.Database_Reference;
       Updater : not null access
-        procedure (Item : in out Root_Record_Type'Class));
+        procedure (Item : not null access Root_Record_Type'Class));
 
    overriding function Element
      (Db        : Local_Database_Type;
@@ -1029,28 +1029,26 @@ package body Memor.Database is
    procedure Update (Item    : Local_Database_Type;
                      Ref     : Memor.Database_Reference;
                      Updater : not null access
-                       procedure (Item : in out Root_Record_Type'Class))
+                       procedure (Item : not null access
+                                    Root_Record_Type'Class))
    is
-
       pragma Unreferenced (Item);
+      E      : constant Db_Entry_Access := Db.Element (Ref);
+   begin
+      if Locking then
+         E.Lock;
+      end if;
 
-      procedure Perform_Update
-        (Item : in out Element_Type'Class);
-
-      --------------------
-      -- Perform_Update --
-      --------------------
-
-      procedure Perform_Update
-        (Item : in out Element_Type'Class)
-      is
+      declare
+         Item : constant Element_Access := Element_Access (E.Item);
       begin
          Updater (Item);
-         Item.After_Change;
-      end Perform_Update;
+         if Locking then
+            E.Unlock;
+         end if;
+         E.Item.After_Change;
+      end;
 
-   begin
-      Update (Ref, Perform_Update'Access);
    end Update;
 
    ------------

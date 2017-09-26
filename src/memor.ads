@@ -33,7 +33,8 @@ package Memor is
    procedure Update (Item : Root_Database_Type;
                      Ref  : Memor.Database_Reference;
                      Updater : not null access
-                       procedure (Item : in out Root_Record_Type'Class))
+                       procedure (Item : not null access
+                                    Root_Record_Type'Class))
    is abstract;
 
    function Element
