@@ -83,6 +83,19 @@ package Memor.Element_Vectors is
         procedure (Index     : Index_Type'Class;
                    Element   : in out Element_Type));
 
+   procedure Update
+     (Container    : in out Vector;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : in out Element_Type));
+
+   procedure Update
+     (Container    : in out Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : in out Element_Type));
+
 private
 
    package Element_Vectors is

@@ -144,6 +144,62 @@ package body Memor.Element_Vectors is
    ------------
 
    procedure Update
+     (Container    : in out Vector;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : in out Element_Type))
+   is
+   begin
+      Container.Update (True, Process);
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update
+     (Container    : in out Vector;
+      Skip_Default : Boolean;
+      Process      : not null access
+        procedure (Index     : not null access constant Index_Type'Class;
+                   Element   : in out Element_Type))
+   is
+   begin
+      if Container.Db /= null then
+         for Reference in 1 .. Container.V.Last_Index loop
+            if not Skip_Default
+              or else Container.V.Element (Reference) /= Default_Value
+            then
+               declare
+                  Index : constant access constant Index_Type'Class :=
+                            Index_Type'Class
+                              (Container.Db.Element (Reference).all)'Access;
+
+                  procedure Do_Update (Element : in out Element_Type);
+
+                  ---------------
+                  -- Do_Update --
+                  ---------------
+
+                  procedure Do_Update (Element : in out Element_Type) is
+                  begin
+                     Process (Index, Element);
+                  end Do_Update;
+
+               begin
+                  Container.Update_Element (Index, Do_Update'Access);
+               end;
+
+            end if;
+         end loop;
+      end if;
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update
      (Container : in out Vector;
       Process   : not null access
         procedure (Index     : Index_Type'Class;
@@ -164,35 +220,24 @@ package body Memor.Element_Vectors is
         procedure (Index     : Index_Type'Class;
                    Element   : in out Element_Type))
    is
+      procedure Local_Process
+        (Index   : not null access constant Index_Type'Class;
+         Element : in out Element_Type);
+
+      -------------------
+      -- Local_Process --
+      -------------------
+
+      procedure Local_Process
+        (Index   : not null access constant Index_Type'Class;
+         Element : in out Element_Type)
+      is
+      begin
+         Process (Index.all, Element);
+      end Local_Process;
+
    begin
-      if Container.Db /= null then
-         for Reference in 1 .. Container.V.Last_Index loop
-            if not Skip_Default
-              or else Container.V.Element (Reference) /= Default_Value
-            then
-               declare
-                  Index : Index_Type'Class renames
-                            Index_Type'Class
-                              (Container.Db.Element (Reference).all);
-
-                  procedure Do_Update (Element : in out Element_Type);
-
-                  ---------------
-                  -- Do_Update --
-                  ---------------
-
-                  procedure Do_Update (Element : in out Element_Type) is
-                  begin
-                     Process (Index, Element);
-                  end Do_Update;
-
-               begin
-                  Container.Update_Element (Index, Do_Update'Access);
-               end;
-
-            end if;
-         end loop;
-      end if;
+      Container.Update (Skip_Default, Local_Process'Access);
    end Update;
 
    --------------------
