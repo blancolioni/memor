@@ -25,6 +25,7 @@ package body Memor is
       for Item of List loop
          Item.Update;
       end loop;
+      List.Clear;
    end Execute_Updates;
 
    -------------
