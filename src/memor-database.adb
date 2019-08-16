@@ -949,6 +949,31 @@ package body Memor.Database is
 --        Memor.Root_Record_Type (Item.all).Reference := Index;
 --     end Set;
 
+   ----------------
+   -- Set_Target --
+   ----------------
+
+   procedure Set_Target
+     (Update  : in out Root_Element_Update'Class;
+      Element : not null access constant Element_Type'Class)
+   is
+   begin
+      Update.Set_Target (Element.all);
+   end Set_Target;
+
+   ----------------
+   -- Set_Target --
+   ----------------
+
+   procedure Set_Target
+     (Update  : in out Root_Element_Update'Class;
+      Element : Element_Type'Class)
+   is
+   begin
+      Update.Reference := Element.Reference;
+      Update.Database  := Element.Object_Database;
+   end Set_Target;
+
    ------------
    -- Unlock --
    ------------
@@ -1068,6 +1093,31 @@ package body Memor.Database is
       return Result : Updateable_Reference (Element.Item) do
          null;
       end return;
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   overriding procedure Update (Item : Root_Element_Update) is
+      procedure Do_Update
+        (Element : not null access Root_Record_Type'Class);
+
+      ---------------
+      -- Do_Update --
+      ---------------
+
+      procedure Do_Update
+        (Element : not null access Root_Record_Type'Class)
+      is
+      begin
+         Root_Element_Update'Class (Item).Update_Element
+           (Element_Type (Element.all)'Access);
+      end Do_Update;
+
+   begin
+      Item.Database.Update
+        (Item.Reference, Do_Update'Access);
    end Update;
 
    -----------------

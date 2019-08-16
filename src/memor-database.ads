@@ -153,6 +153,24 @@ package Memor.Database is
 
    function Get_Database return Memor_Database;
 
+   type Root_Element_Update is
+     abstract new Object_Update_Interface with private;
+
+   procedure Set_Target
+     (Update  : in out Root_Element_Update'Class;
+      Element : not null access constant Element_Type'Class);
+
+   procedure Set_Target
+     (Update  : in out Root_Element_Update'Class;
+      Element : Element_Type'Class);
+
+   overriding procedure Update (Item : Root_Element_Update);
+
+   procedure Update_Element
+     (Update  :        Root_Element_Update;
+      Element : not null access Element_Type'Class)
+   is abstract;
+
 --     function Random_Element return Element_Access;
 --     function Random_Reference return Element_Reference;
 
@@ -184,5 +202,12 @@ private
    overriding procedure Adjust (Ref : in out Updateable_Reference);
    overriding procedure Finalize (Ref : in out Updateable_Reference);
    overriding procedure Initialize (Ref : in out Updateable_Reference);
+
+   type Root_Element_Update is
+     abstract new Object_Update_Interface with
+      record
+         Reference : Database_Reference;
+         Database  : Memor_Database;
+      end record;
 
 end Memor.Database;

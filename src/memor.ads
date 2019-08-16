@@ -1,3 +1,5 @@
+private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
+
 package Memor is
 
    pragma Preelaborate;
@@ -43,6 +45,19 @@ package Memor is
       return access constant Root_Record_Type'Class
       is abstract;
 
+   type Object_Update_Interface is interface;
+
+   procedure Update (Item : Object_Update_Interface) is abstract;
+
+   type Memor_Update_List is private;
+
+   procedure Add_Update
+     (List   : in out Memor_Update_List;
+      Update : Object_Update_Interface'Class);
+
+   procedure Execute_Updates
+     (List : in out Memor_Update_List);
+
    type Memor_Database is access all Root_Database_Type'Class;
 
    function Object_Database (Item : Root_Record_Type)
@@ -70,5 +85,12 @@ private
    function Locking return Boolean;
 
    type Root_Database_Type is abstract tagged null record;
+
+   package Update_Lists is
+     new Ada.Containers.Indefinite_Doubly_Linked_Lists
+       (Object_Update_Interface'Class);
+
+   type Memor_Update_List is
+     new Update_Lists.List with null record;
 
 end Memor;

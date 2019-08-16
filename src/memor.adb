@@ -2,6 +2,31 @@ package body Memor is
 
    Locking_Enabled : Boolean := True;
 
+   ----------------
+   -- Add_Update --
+   ----------------
+
+   procedure Add_Update
+     (List   : in out Memor_Update_List;
+      Update : Object_Update_Interface'Class)
+   is
+   begin
+      List.Append (Update);
+   end Add_Update;
+
+   ---------------------
+   -- Execute_Updates --
+   ---------------------
+
+   procedure Execute_Updates
+     (List : in out Memor_Update_List)
+   is
+   begin
+      for Item of List loop
+         Item.Update;
+      end loop;
+   end Execute_Updates;
+
    -------------
    -- Locking --
    -------------
