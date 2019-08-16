@@ -64,6 +64,10 @@ package Memor.Database is
 
    procedure Update (Ref     : Database_Reference;
                      Updater : not null access
+                       procedure (Item : not null access Element_Type'Class));
+
+   procedure Update (Ref     : Database_Reference;
+                     Updater : not null access
                        procedure (Item : in out Root_Record_Type'Class));
 
    generic

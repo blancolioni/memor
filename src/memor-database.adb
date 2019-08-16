@@ -1006,6 +1006,29 @@ package body Memor.Database is
                      Updater : not null access
                        procedure (Item : in out Element_Type'Class))
    is
+      procedure Do_Update (Item : not null access Element_Type'Class);
+
+      ---------------
+      -- Do_Update --
+      ---------------
+
+      procedure Do_Update (Item : not null access Element_Type'Class) is
+      begin
+         Updater (Item.all);
+      end Do_Update;
+
+   begin
+      Update (Ref, Do_Update'Access);
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update (Ref     : Database_Reference;
+                     Updater : not null access
+                       procedure (Item : not null access Element_Type'Class))
+   is
       E      : constant Db_Entry_Access := Db.Element (Ref);
    begin
       if Locking then
@@ -1014,7 +1037,7 @@ package body Memor.Database is
       declare
          Item : constant Element_Access := Element_Access (E.Item);
       begin
-         Updater (Item.all);
+         Updater (Item);
          if Locking then
             E.Unlock;
          end if;
