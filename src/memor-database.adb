@@ -48,16 +48,20 @@ package body Memor.Database is
       new Ada.Containers.Vectors (Real_Database_Reference, Db_Entry_Access);
 
    package Db_Free_List is
-     new Ada.Containers.Doubly_Linked_Lists (Real_Database_Reference);
+     new Ada.Containers.Doubly_Linked_Lists (Db_Entry_Access);
 
    protected Db is
       entry Lock;
       procedure Unlock;
 
-      procedure Insert (Item : not null access Element_Type'Class);
+      procedure Create
+        (Element : out Element_Access);
+
+      procedure Create_With_Reference
+        (Ref : Database_Reference;
+         Element : out Element_Access);
+
       procedure Delete (Reference : Database_Reference);
-      procedure Set (Index : Database_Reference;
-                     Item  : Element_Access);
 
       function Element (Ref : Database_Reference) return Db_Entry_Access;
       function Has_Element (Ref : Database_Reference) return Boolean;
@@ -77,18 +81,60 @@ package body Memor.Database is
 
    protected body Db is
 
+      procedure Create
+        (Element : out Element_Access)
+      is
+         New_Entry   : Db_Entry_Access;
+      begin
+         if Free.Is_Empty then
+            Element := new Element_Type;
+            New_Entry   := new Db_Entry (Element);
+            V.Append (New_Entry);
+            Memor.Root_Record_Type (Element.all).Ref := V.Last_Index;
+         else
+            New_Entry := Free.First_Element;
+            Element   := Element_Access (New_Entry.Item);
+            V (Element.Ref) := New_Entry;
+            Free.Delete_First;
+         end if;
+      end Create;
+
+      ---------------------------
+      -- Create_With_Reference --
+      ---------------------------
+
+      procedure Create_With_Reference
+        (Ref     : Database_Reference;
+         Element : out Element_Access)
+      is
+         Free_Position : Db_Free_List.Cursor := Db_Free_List.No_Element;
+      begin
+         for Position in Free.Iterate loop
+            if Db_Free_List.Element (Position).Item.Reference = Ref then
+               Free_Position := Position;
+               exit;
+            end if;
+         end loop;
+
+         if Db_Free_List.Has_Element (Free_Position) then
+            V (Ref) := Db_Free_List.Element (Free_Position);
+            Element := Element_Access (V (Ref).Item);
+         else
+            Element := new Element_Type;
+            V (Ref) := new Db_Entry (Element);
+            Element.Ref := Ref;
+         end if;
+      end Create_With_Reference;
+
       ------------
       -- Delete --
       ------------
 
       procedure Delete (Reference : Database_Reference) is
-         Current : Db_Entry_Access := V (Reference);
-         procedure Free_Entry is
-           new Ada.Unchecked_Deallocation (Db_Entry, Db_Entry_Access);
+         Current : constant Db_Entry_Access := V (Reference);
       begin
-         Free.Append (Reference);
+         Free.Append (Current);
          V.Replace_Element (Reference, null);
-         Free_Entry (Current);
       end Delete;
 
       -------------------
@@ -118,23 +164,6 @@ package body Memor.Database is
          return V.Element (Ref) /= null;
       end Has_Element;
 
-      ------------
-      -- Insert --
-      ------------
-
-      procedure Insert (Item : not null access Element_Type'Class) is
-         New_Item : constant Db_Entry_Access := new Db_Entry (Item);
-      begin
-         if Free.Is_Empty then
-            V.Append (New_Item);
-            Memor.Root_Record_Type (Item.all).Ref := V.Last_Index;
-         else
-            Memor.Root_Record_Type (Item.all).Ref := Free.First_Element;
-            V (Memor.Root_Record_Type (Item.all).Ref) := New_Item;
-            Free.Delete_First;
-         end if;
-      end Insert;
-
       ----------------
       -- Last_Index --
       ----------------
@@ -152,20 +181,6 @@ package body Memor.Database is
       begin
          Db_Lock := True;
       end Lock;
-
-      ---------
-      -- Set --
-      ---------
-
-      procedure Set (Index : Database_Reference;
-                     Item  : Element_Access)
-      is
-      begin
-         while V.Last_Index < Index loop
-            V.Append (null);
-         end loop;
-         V.Replace_Element (Index, new Db_Entry (Item));
-      end Set;
 
       ------------
       -- Unlock --
@@ -297,11 +312,11 @@ package body Memor.Database is
                       (Item : in out Element_Type'Class))
                     return Database_Reference
    is
-      Item : constant Element_Access := new Element_Type;
+      New_Element : Element_Access;
    begin
-      Db.Insert (Item);
-      Creator (Item.all);
-      return Item.Reference;
+      Db.Create (New_Element);
+      Creator (New_Element.all);
+      return New_Element.Reference;
    end Create;
 
    ------------
@@ -326,11 +341,10 @@ package body Memor.Database is
                      Creator : not null access procedure
                        (Item : in out Element_Type'Class))
    is
-      Item : constant Element_Access := new Element_Type;
+      New_Element : Element_Access;
    begin
-      Memor.Root_Record_Type (Item.all).Ref := Ref;
-      Db.Set (Ref, Item);
-      Creator (Item.all);
+      Db.Create_With_Reference (Ref, New_Element);
+      Creator (New_Element.all);
    end Create;
 
    ------------
